@@ -16,7 +16,11 @@ To customize the swap file size from the command line, pass `swap_file_size_gb` 
 sudo ansible-playbook playbook.yml -e "swap_file_size_gb=8"
 ```
 
+#### Passing Multiple Variables
 ```
 sudo ansible-playbook playbook.yml -e "swap_file_size_gb=8 vm_swappiness=20"
+```
+#### JSON Syntax
+```
 sudo ansible-playbook playbook.yml -e '{"swap_file_size_gb": 8}'
 ```
