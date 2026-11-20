@@ -1,5 +1,5 @@
 ---
-- name: Install base packages and configure unattended-upgrades, automatic reboots, and 16GB swap
+- name: "Install base packages and configure unattended-upgrades, automatic reboots, and {{ swap_file_size_gb }}GB swap"
   hosts: all
   become: true
 
