@@ -1,0 +1,14 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Run unattended-upgrades immediately after boot
+After=network-online.target apt-daily.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/unattended-upgrade {{ unattended_upgrade_boot_flags }}
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

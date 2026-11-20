@@ -7,9 +7,11 @@
     swap_file_path: /swapfile
     swap_file_size_mb: 16384
     vm_swappiness: "10"
+    unattended_upgrade_boot_flags: "-d -v"
 
   tasks:
-    - name: Update APT cache and install basic tools
+    # --- Base Packages & Unattended Upgrades ---
+    - name: Update APT cache and install basic tools and unattended-upgrades
       ansible.builtin.apt:
         name:
           - curl
@@ -25,17 +27,24 @@
           - ansible
           - openssh-client
           - sshpass
-        state: present
-        update_cache: yes
-        cache_valid_time: 3600
-
-    # --- Unattended Upgrades ---
-    - name: Ensure unattended-upgrades package is installed
-      ansible.builtin.apt:
-        name: unattended-upgrades
+          - unattended-upgrades
         state: present
         update_cache: true
         cache_valid_time: 3600
+
+    - name: Pre-seed debconf to enable unattended-upgrades automatically
+      ansible.builtin.debconf:
+        name: unattended-upgrades
+        question: unattended-upgrades/enable_auto_updates
+        value: "true"
+        vtype: boolean
+      register: debconf_unattended
+
+    - name: Reconfigure unattended-upgrades non-interactively
+      ansible.builtin.command:
+        cmd: dpkg-reconfigure -f noninteractive unattended-upgrades
+      when: debconf_unattended.changed
+      changed_when: true
 
     - name: Configure automatic reboot and reboot time in 50unattended-upgrades
       ansible.builtin.lineinfile:
@@ -49,6 +58,21 @@
         - regexp: '^(//)?Unattended-Upgrade::Automatic-Reboot-Time\s+'
           line: 'Unattended-Upgrade::Automatic-Reboot-Time "02:00";'
       notify: Restart unattended-upgrades
+
+    - name: Deploy unattended-upgrade-boot systemd service from template
+      ansible.builtin.template:
+        src: templates/unattended-upgrade-boot.service.j2
+        dest: /etc/systemd/system/unattended-upgrade-boot.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload systemd daemon
+
+    - name: Enable unattended-upgrade-boot service on startup
+      ansible.builtin.systemd:
+        name: unattended-upgrade-boot.service
+        enabled: true
+        daemon_reload: true
 
     - name: Enable and start unattended-upgrades service and APT timers
       ansible.builtin.systemd:
@@ -105,6 +129,10 @@
         reload: true
 
   handlers:
+    - name: Reload systemd daemon
+      ansible.builtin.systemd:
+        daemon_reload: true
+
     - name: Restart unattended-upgrades
       ansible.builtin.systemd:
         name: unattended-upgrades.service
