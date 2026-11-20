@@ -1,6 +1,13 @@
 ---
-- name: Install base packages 
+- name: Install base packages and configure unattended-upgrades, automatic reboots, and 16GB swap
   hosts: all
+  become: true
+
+  vars:
+    swap_file_path: /swapfile
+    swap_file_size_mb: 16384
+    vm_swappiness: "10"
+
   tasks:
     - name: Update APT cache and install basic tools
       ansible.builtin.apt:
@@ -22,16 +29,6 @@
         update_cache: yes
         cache_valid_time: 3600
 
-- name: Configure unattended-upgrades, automatic reboots, and 16GB swap
-  hosts: all
-  become: true
-
-  vars:
-    swap_file_path: /swapfile
-    swap_file_size_mb: 16384
-    vm_swappiness: "10"
-
-  tasks:
     # --- Unattended Upgrades ---
     - name: Ensure unattended-upgrades package is installed
       ansible.builtin.apt:
