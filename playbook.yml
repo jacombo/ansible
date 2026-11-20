@@ -5,7 +5,7 @@
 
   vars:
     swap_file_path: /swapfile
-    swap_file_size_mb: 16384
+    swap_file_size_gb: 16
     vm_swappiness: "10"
     unattended_upgrade_boot_flags: "-d -v"
 
@@ -86,19 +86,22 @@
         - apt-daily-upgrade.timer
 
     # --- Swap Configuration ---
-    - name: Check if swapfile exists
-      ansible.builtin.stat:
-        path: "{{ swap_file_path }}"
-      register: swap_file_check
+    - name: Check active swap size with swapon
+      ansible.builtin.command:
+        cmd: swapon --show=SIZE --noheadings --bytes
+      register: swapon_output
+      changed_when: false
+
+    - name: Calculate active swap size in GB
+      ansible.builtin.set_fact:
+        current_swap_gb: "{{ ((swapon_output.stdout_lines | default([]) | map('int') | sum) / 1024 / 1024 / 1024) | round(1) }}"
 
     - name: Create and configure swapfile
-      when:
-        - not swap_file_check.stat.exists
-        - (ansible_facts['swaptotal_mb'] | default(0) | int) < swap_file_size_mb
+      when: (current_swap_gb | default(0) | float) < (swap_file_size_gb | float)
       block:
         - name: Create swapfile
           ansible.builtin.command:
-            cmd: "fallocate -l {{ swap_file_size_mb }}M {{ swap_file_path }}"
+            cmd: "fallocate -l {{ swap_file_size_gb }}G {{ swap_file_path }}"
             creates: "{{ swap_file_path }}"
 
         - name: Set secure permissions (0600) on swapfile
