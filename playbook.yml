@@ -8,6 +8,8 @@
     swap_file_size_gb: 16
     vm_swappiness: "10"
     unattended_upgrade_boot_flags: "-d -v"
+    install_docker: true
+    install_stremio: false
 
   tasks:
     # --- Base Packages & Unattended Upgrades ---
@@ -17,8 +19,6 @@
           - curl
           - htop
           - iproute2
-          - docker.io
-          - docker-compose-v2
           - vim
           - nano
           - net-tools
@@ -31,6 +31,37 @@
         state: present
         update_cache: true
         cache_valid_time: 3600
+
+    - name: Install Docker and Docker Compose
+      ansible.builtin.apt:
+        name:
+          - docker.io
+          - docker-compose-v2
+        state: present
+      when: install_docker | bool
+
+    # --- Stremio Installation ---
+    - name: Install Stremio via Flatpak
+      when: install_stremio | bool
+      block:
+        - name: Ensure Flatpak is installed
+          ansible.builtin.apt:
+            name: flatpak
+            state: present
+
+        - name: Add Flathub remote repository
+          community.general.flatpak_remote:
+            name: flathub
+            state: present
+            flatpakrepo_url: https://dl.flathub.org/repo/flathub.flatpakrepo
+            method: system
+
+        - name: Install Stremio Flatpak
+          community.general.flatpak:
+            name: com.stremio.Stremio
+            state: present
+            remote: flathub
+            method: system
 
     - name: Pre-seed debconf to enable unattended-upgrades automatically
       ansible.builtin.debconf:
@@ -138,6 +169,26 @@
         value: "{{ vm_swappiness }}"
         state: present
         reload: true
+
+    # --- Mounts Configuration ---
+    - name: Copy tmp.mount unit file to /etc/systemd/system/
+      ansible.builtin.shell: |
+        if [ -f /usr/share/systemd/tmp.mount ]; then
+          cp /usr/share/systemd/tmp.mount /etc/systemd/system/tmp.mount
+        elif [ -f /usr/lib/systemd/system/tmp.mount ]; then
+          cp /usr/lib/systemd/system/tmp.mount /etc/systemd/system/tmp.mount
+        elif [ -f /lib/systemd/system/tmp.mount ]; then
+          cp /lib/systemd/system/tmp.mount /etc/systemd/system/tmp.mount
+        fi
+      args:
+        creates: /etc/systemd/system/tmp.mount
+
+    - name: Enable and start tmp.mount
+      ansible.builtin.systemd:
+        name: tmp.mount
+        daemon_reload: true
+        enabled: true
+        state: started
 
   handlers:
     - name: Reload systemd daemon

@@ -24,3 +24,15 @@ sudo ansible-playbook playbook.yml -e "swap_file_size_gb=8 vm_swappiness=20"
 ```
 sudo ansible-playbook playbook.yml -e '{"swap_file_size_gb": 8}'
 ```
+
+#### Enable/Disable Docker installation (optional)
+Docker is installed by default (`install_docker: true`). To skip Docker installation:
+```bash
+sudo ansible-playbook playbook.yml -e "install_docker=false"
+```
+
+#### Enable/Disable Stremio installation (optional)
+Stremio is installed by default via Flatpak (`install_stremio: true`). To skip Stremio installation:
+```bash
+sudo ansible-playbook playbook.yml -e "install_stremio=false"
+```
