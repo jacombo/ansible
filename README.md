@@ -2,7 +2,7 @@
 
 ### Install Ansible
 ```
-git@github.com:jacombo/ansible.git
+sudo apt install ansible -y
 ```
 
 ### How to run it
