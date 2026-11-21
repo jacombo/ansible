@@ -11,6 +11,7 @@
     install_docker: false
     install_stremio: false
     install_chrome: false
+    install_antigravity_cli: false
 
   tasks:
     # --- Base Packages & Unattended Upgrades ---
@@ -70,6 +71,14 @@
         deb: https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
         state: present
       when: install_chrome | bool
+
+    # --- Google Antigravity CLI Installation ---
+    - name: Download and install Google Antigravity CLI
+      ansible.builtin.shell: |
+        curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- -d /usr/local/bin
+      args:
+        creates: /usr/local/bin/agy
+      when: install_antigravity_cli | bool
 
     - name: Pre-seed debconf to enable unattended-upgrades automatically
       ansible.builtin.debconf:

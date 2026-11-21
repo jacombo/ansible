@@ -42,3 +42,9 @@ Install Google Chrome:
 ```bash
 sudo ansible-playbook playbook.yml -e "install_chrome=true"
 ```
+
+#### Enable/Disable Google Antigravity CLI installation (optional)
+Install Google Antigravity CLI:
+```bash
+sudo ansible-playbook playbook.yml -e "install_antigravity_cli=true"
+```
