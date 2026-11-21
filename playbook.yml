@@ -12,6 +12,7 @@
     install_stremio: false
     install_chrome: false
     install_antigravity_cli: false
+    install_antigravity_ide: false
 
   tasks:
     # --- Base Packages & Unattended Upgrades ---
@@ -79,6 +80,51 @@
       args:
         creates: /usr/local/bin/agy
       when: install_antigravity_cli | bool
+
+    # --- Google Antigravity IDE Installation ---
+    - name: Install Google Antigravity IDE
+      when: install_antigravity_ide | bool
+      block:
+        - name: Ensure /opt/antigravity-ide directory exists
+          ansible.builtin.file:
+            path: /opt/antigravity-ide
+            state: directory
+            owner: root
+            group: root
+            mode: "0755"
+
+        - name: Download and extract Google Antigravity IDE
+          ansible.builtin.unarchive:
+            src: "https://edgedl.me.gvt1.com/edgedl/release2/j0qc3/antigravity/stable/2.8.0-6733682917113856/linux-x64/Antigravity%20IDE.tar.gz"
+            dest: /opt/antigravity-ide
+            remote_src: true
+            extra_opts:
+              - --strip-components=1
+            creates: /opt/antigravity-ide/bin/antigravity-ide
+
+        - name: Create symlink for antigravity-ide in /usr/local/bin
+          ansible.builtin.file:
+            src: /opt/antigravity-ide/bin/antigravity-ide
+            dest: /usr/local/bin/antigravity-ide
+            state: link
+
+        - name: Create desktop entry for Google Antigravity IDE
+          ansible.builtin.copy:
+            dest: /usr/share/applications/antigravity-ide.desktop
+            owner: root
+            group: root
+            mode: "0644"
+            content: |
+              [Desktop Entry]
+              Name=Google Antigravity IDE
+              Comment=AI-first integrated development environment
+              Exec=/usr/local/bin/antigravity-ide %F
+              Icon=/opt/antigravity-ide/resources/app/resources/linux/code.png
+              Type=Application
+              StartupNotify=true
+              StartupWMClass=Antigravity IDE
+              Categories=Development;IDE;
+              MimeType=text/plain;inode/directory;
 
     - name: Pre-seed debconf to enable unattended-upgrades automatically
       ansible.builtin.debconf:

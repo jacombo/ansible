@@ -48,3 +48,9 @@ Install Google Antigravity CLI:
 ```bash
 sudo ansible-playbook playbook.yml -e "install_antigravity_cli=true"
 ```
+
+#### Enable/Disable Google Antigravity IDE installation (optional)
+Install Google Antigravity IDE:
+```bash
+sudo ansible-playbook playbook.yml -e "install_antigravity_ide=true"
+```
