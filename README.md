@@ -54,3 +54,13 @@ Install Google Antigravity IDE:
 ```bash
 sudo ansible-playbook playbook.yml -e "install_antigravity_ide=true"
 ```
+
+#### Configure Git User Details (optional)
+By default, Git global configuration is set to:
+- `user.name`: `Zdenek Jakubec`
+- `user.email`: `zdenek.jakubec@gmail.com`
+
+To override Git user details from the command line:
+```bash
+sudo ansible-playbook playbook.yml -e "git_user_name='Your Name' git_user_email='your.email@example.com'"
+```
