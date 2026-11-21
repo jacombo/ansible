@@ -26,13 +26,19 @@ sudo ansible-playbook playbook.yml -e '{"swap_file_size_gb": 8}'
 ```
 
 #### Enable/Disable Docker installation (optional)
-Docker is installed by default (`install_docker: true`). To skip Docker installation:
+Install Docker:
 ```bash
-sudo ansible-playbook playbook.yml -e "install_docker=false"
+sudo ansible-playbook playbook.yml -e "install_docker=true"
 ```
 
 #### Enable/Disable Stremio installation (optional)
-Stremio is installed by default via Flatpak (`install_stremio: true`). To skip Stremio installation:
+Install Stremio:
 ```bash
-sudo ansible-playbook playbook.yml -e "install_stremio=false"
+sudo ansible-playbook playbook.yml -e "install_stremio=true"
+```
+
+#### Enable/Disable Google Chrome installation (optional)
+Install Google Chrome:
+```bash
+sudo ansible-playbook playbook.yml -e "install_chrome=true"
 ```

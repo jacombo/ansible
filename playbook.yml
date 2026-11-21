@@ -8,8 +8,9 @@
     swap_file_size_gb: 16
     vm_swappiness: "10"
     unattended_upgrade_boot_flags: "-d -v"
-    install_docker: true
+    install_docker: false
     install_stremio: false
+    install_chrome: false
 
   tasks:
     # --- Base Packages & Unattended Upgrades ---
@@ -62,6 +63,13 @@
             state: present
             remote: flathub
             method: system
+
+    # --- Google Chrome Installation ---
+    - name: Download and install Google Chrome
+      ansible.builtin.apt:
+        deb: https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+        state: present
+      when: install_chrome | bool
 
     - name: Pre-seed debconf to enable unattended-upgrades automatically
       ansible.builtin.debconf:
