@@ -1,12 +1,12 @@
-# {{ ansible_managed }}
+# Ansible managed
 [Unit]
 Description=Run unattended-upgrades immediately after boot
-After=network-online.target apt-daily.service
+After=network-online.target apt-daily.service apt-daily-upgrade.service
 Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/unattended-upgrade {{ unattended_upgrade_boot_flags }}
+ExecStart=/usr/bin/flock -w 300 /var/lib/dpkg/lock-frontend /usr/bin/unattended-upgrade -d -v
 StandardOutput=journal
 StandardError=journal
 
